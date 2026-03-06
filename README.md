@@ -1,27 +1,34 @@
-🔐 Authentication & Authorization
-This project implements a secure JWT (JSON Web Token) authentication system using ASP.NET Core Identity.
+## 🔐 Authentication & Authorization
 
-Key Features
-IdentityCore Integration: A lightweight membership system for managing users, passwords, and roles without unnecessary UI overhead.
+This project implements a secure **JWT (JSON Web Token)** authentication system using **ASP.NET Core Identity**.
 
-JWT Bearer Tokens: Secure, stateless authentication where the server issues a signed token to the client.
+### Key Features
 
-Custom Claims: Tokens include specific user data (ID, Email, JTI) to reduce database lookups and improve performance.
+**IdentityCore Integration**  
+A lightweight membership system used for managing users, passwords, and roles without unnecessary UI components.
 
-Entity Framework Core: Uses IdentityDbContext to manage user data persistence in SQL Server.
+**JWT Bearer Tokens**  
+Implements secure and stateless authentication where the server issues a signed token to the client after successful authentication.
 
-How it Works
-Registration/Login: The user sends credentials to the AuthController.
+**Custom Claims**  
+Tokens include essential user data such as **User ID**, **Email**, and **JTI (Token ID)**.  
+This reduces additional database queries and improves performance when identifying users.
 
-Validation: The system validates the user via UserManager.
+**Entity Framework Core Integration**  
+Uses `IdentityDbContext` to handle user persistence and manage authentication-related data within **SQL Server**.
 
-Token Generation: A SecurityTokenDescriptor defines the user's identity (claims) and signs it with a private key.
+---
 
-Authorization: The client sends the token in the Authorization header for all subsequent API requests.
+### How It Works
 
-Project Structure
-DTOs/Requests: Contains data transfer objects for incoming data like UserRegistrationDto.
+1. **Registration / Login**  
+   The user sends their credentials to the `AuthController`.
 
-DTOs/Responses: Contains outgoing data structures like AuthResult.
+2. **User Validation**  
+   The system validates the credentials using `UserManager`.
 
-Data: Contains the AppDbContext which handles the database connection.
+3. **Token Generation**  
+   A `SecurityTokenDescriptor` defines the user's identity through **claims** and signs the token using a secure private key.
+
+4. **Authorized Requests**  
+   The client includes the JWT token in the `Authorization` header for all protected API requests.
