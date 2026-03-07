@@ -26,7 +26,7 @@ namespace JWTAuthentication.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterationRequestDto request)
         {
-            if (ModelState.IsValid)
+            if(ModelState.IsValid)
             {
                 var existingUser = await _userManager.FindByEmailAsync(request.Email);
                 if (existingUser != null)
@@ -43,7 +43,7 @@ namespace JWTAuthentication.Controllers
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     Email = request.Email,
-                    UserName = request.FirstName +"11",
+                    UserName = request.Email,
                     EmailConfirmed = true // todo i will make this feature later
                 };
                 //added the new user to the database
@@ -74,6 +74,45 @@ namespace JWTAuthentication.Controllers
             else
             {
                 return BadRequest(new UserRegisterationResponseDto
+                {
+                    Success = false,
+                    Errors = new List<string> { "Invalid payload" }
+                });
+            }
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequestDto requestDto)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingUser = await _userManager.FindByEmailAsync(requestDto.Email);
+                if (existingUser == null)
+                {
+                    return BadRequest(new UserLoginResponseDto
+                    {
+                        Success = false,
+                        Errors = new List<string> { "Invalid login request" }
+                    });
+                }
+                var isCorrect = await _userManager.CheckPasswordAsync(existingUser, requestDto.Password);
+                if (!isCorrect)
+                {
+                    return BadRequest(new UserLoginResponseDto
+                    {
+                        Success = false,
+                        Errors = new List<string> { "Invalid login request" }
+                    });
+                }
+                var jwtToken = GenerateJwtToken(existingUser);
+                return Ok(new UserLoginResponseDto
+                {
+                    Success = true,
+                    Token = jwtToken
+                });
+            }
+            else
+            {
+                return BadRequest(new UserLoginResponseDto
                 {
                     Success = false,
                     Errors = new List<string> { "Invalid payload" }
