@@ -1,4 +1,5 @@
 ﻿using JWTAuthentication.Configuration.Models;
+using JWTAuthentication.Models;
 using JWTAuthentication.Models.DTOs.Requests;
 using JWTAuthentication.Models.DTOs.Responses;
 using Microsoft.AspNetCore.Identity;
@@ -10,11 +11,12 @@ using System.Security.Claims;
 //please ask him how  he create a user table and in another side he use the identity user 
 namespace JWTAuthentication.Controllers
 {
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtConfig _jwtConfig;
-        public AuthController(UserManager<IdentityUser> userManager,
+        public AuthController(UserManager<ApplicationUser> userManager,
                               IOptionsMonitor<JwtConfig> optionsMonitor)
         {
             _jwtConfig = optionsMonitor.CurrentValue;
@@ -36,14 +38,17 @@ namespace JWTAuthentication.Controllers
                     });
                 }
                 // creating a new user object with the provided email and password
-                var newUser = new IdentityUser
+                var newUser = new ApplicationUser
                 {
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
                     Email = request.Email,
-                    UserName = request.Email,
+                    UserName = request.FirstName +"11",
                     EmailConfirmed = true // todo i will make this feature later
                 };
                 //added the new user to the database
                 var isCreated = await _userManager.CreateAsync(newUser, request.Password);
+
                 if (!isCreated.Succeeded)//when the registration process fails,
                 {
                     return BadRequest(new UserRegisterationResponseDto
@@ -99,7 +104,6 @@ namespace JWTAuthentication.Controllers
                 Expires = DateTime.UtcNow.AddHours(6),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = jwtTokenHandler.WriteToken(token);
             return jwtToken;
