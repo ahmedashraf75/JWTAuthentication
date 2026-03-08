@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,30 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+
+
+
+var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:Secret"]);
+// this code is creating an instance of the TokenValidationParameters class
+// and configuring it with various settings related to token validation.
+// The TokenValidationParameters class is used to specify the parameters that will be
+// used to validate JWT tokens in the application.
+var tokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = false,
+    ValidateAudience = false,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(key)
+};
+//this code is adding the token validation parameters to the application's service container as a singleton service.
+// By doing this, we can easily access the token validation parameters throughout our application by
+// injecting the IOptions<TokenValidationParameters> interface where needed.
+// and this helps to ensure that the same instance of the token validation parameters is used across the entire application,
+// which can improve performance and reduce memory usage.
+builder.Services.AddSingleton(tokenValidationParameters);
+
 
 
 /*********************************************************************************************************************************/
@@ -27,15 +52,8 @@ builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfi
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Secret"]))
-        };
+        options.SaveToken = true;
+        options.TokenValidationParameters = tokenValidationParameters;
     }
     );
 
